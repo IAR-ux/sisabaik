@@ -1,39 +1,77 @@
 # SisaBaik API
 
-## Deskripsi
+API untuk aplikasi SisaBaik yang membantu pengelolaan penawaran makanan dan pemesanan makanan.
 
-REST API untuk aplikasi SisaBaik pada Chapter 7 Pengembangan Web.
+## Persyaratan
 
-## Prasyarat
+- Node.js yang mendukung opsi `--env-file`.
+- PostgreSQL.
+- File `.env` yang berisi konfigurasi koneksi database dan rahasia autentikasi.
 
-- Node.js
-- PostgreSQL
-- Database SisaBaik dari Chapter 6
+## Instalasi dan Menjalankan Aplikasi
 
-## Menjalankan Server
+1. Instal dependensi:
 
-Gunakan perintah:
+   ```bash
+   npm install
+   ```
 
-npm run dev
+2. Siapkan database PostgreSQL dan sesuaikan konfigurasi pada `.env.example`.
+3. Buat file `.env` berdasarkan `.env.example`, lalu isi konfigurasi database dan rahasia autentikasi untuk lingkungan lokal.
+4. Jalankan migrasi database sesuai urutan proyek, termasuk `database/07_auth.sql`.
+5. Jalankan server untuk pengembangan:
 
-## Database
+   ```bash
+   npm run dev
+   ```
 
-Project menggunakan PostgreSQL dengan database sisabaik_dev.
+6. Jalankan pengujian autentikasi:
 
-## Menjalankan Pengujian
+   ```bash
+   npm run auth:test
+   ```
 
-Pengujian API dapat dijalankan menggunakan:
+7. Untuk menjalankan skrip verifikasi penyedia, gunakan:
 
-node scripts/uji-api.js
+   ```bash
+   npm run penyedia:verifikasi
+   ```
 
-Pengujian konkurensi dapat dijalankan menggunakan:
+   Ikuti petunjuk skrip dan pastikan akun yang diverifikasi memang sesuai dengan kebutuhan pengujian.
 
-node scripts/uji-konkurensi.js
 
-## Catatan API
+## Autentikasi dan Otorisasi
 
-Request pembuatan pesanan menggunakan emailPembeli.
+Aplikasi menggunakan autentikasi berbasis token dan pemeriksaan peran serta kepemilikan data di server.
 
-## Batasan Aplikasi
+- Pembeli dan penyedia mendaftar melalui endpoint registrasi masing-masing.
+- Registrasi tidak memberikan kebebasan kepada klien untuk memilih peran sembarangan.
+- Akun penyedia harus melalui proses peninjauan atau persetujuan admin sebelum dapat menggunakan fitur penyedia yang dilindungi.
+- Kata sandi disimpan dalam bentuk hash, bukan teks biasa.
+- Identitas pengguna yang terautentikasi ditentukan oleh server berdasarkan token dan akun yang valid.
+- Pembuatan pesanan tidak menerima `emailPembeli` atau `penyediaId` sebagai sumber identitas tepercaya dari klien.
+- Penyedia hanya dapat mengelola penawaran miliknya sendiri.
+- Logout semua sesi membatalkan validitas token lama melalui mekanisme versi token yang diperiksa oleh server.
 
-Aplikasi masih berjalan secara lokal dan belum menggunakan autentikasi.
+## Konfigurasi Lingkungan
+
+Gunakan `.env.example` sebagai acuan nama variabel konfigurasi. Isi nilai rahasia hanya di `.env` lokal.
+
+**Jangan** memasukkan kata sandi, token, nilai rahasia JWT, atau isi `.env` ke dokumentasi maupun repositori Git.
+
+## Pengujian
+
+Jalankan pengujian autentikasi dengan:
+
+```bash
+npm run auth:test
+```
+
+Pengujian ini memverifikasi perilaku autentikasi dan otorisasi sesuai cakupan skrip pengujian proyek.
+
+## Dokumentasi API dan Hasil Pengujian
+
+- `docs/API.md`: dokumentasi endpoint, format request, respons, dan kode kesalahan.
+- `docs/hasil-uji-chapter8.md`: catatan hasil pengujian autentikasi dan otorisasi Chapter 8.
+
+Catat hasil pengujian yang benar-benar dijalankan. Jangan mencatat token atau kredensial rahasia.

@@ -1,205 +1,175 @@
 # Dokumentasi API SisaBaik
 
 ## Base URL
-[http://127.0.0.1:3000](http://127.0.0.1:3000)
+
+`http://127.0.0.1:3000`
 
 ## Format Response
-Semua response API menggunakan format JSON. Response dapat berisi `success`, `data`, `meta`, atau `error` sesuai dengan hasil request.
 
-### Contoh Response Berhasil
+Response API menggunakan JSON dengan struktur yang dapat berisi `success`, `data`, `meta`, atau `error`.
 
-Contoh response dari endpoint GET /api/health:
+## Health
 
-```json
-{
-  "success": true,
-  "data": {
-    "status": "ok",
-    "database": "connected",
-    "waktu": "2026-10-12T09:24:33.356Z"
-  }
-}
-```
+### GET `/api/health`
 
-### Contoh Response Error
+Memeriksa status server dan koneksi database. Endpoint ini dapat diakses tanpa login.
 
-Response ketika request gagal, misalnya karena data yang dikirim tidak valid:
+- `200`: server berjalan dan database terhubung.
 
-```json
-{
-  "success": false,
-  "error": {
-    "message": "Data tidak valid"
-  }
-}
-```
+## Autentikasi
 
-## Endpoint Health
+Semua endpoint berikut menggunakan prefix `/api/auth`.
 
-Server dan koneksi database dapat diperiksa melalui endpoint health.
+### POST `/api/auth/registrasi`
 
-GET /api/health
+Mendaftarkan akun pembeli. Validasi data dan peran dilakukan oleh server. Klien tidak dapat memilih peran secara bebas.
 
-Response berhasil menggunakan status HTTP 200 dan menunjukkan bahwa API serta database terhubung.
+Middleware pembatasan registrasi diterapkan pada endpoint ini.
+
+### POST `/api/auth/registrasi-penyedia`
+
+Mendaftarkan akun penyedia beserta data profil usaha sesuai validasi server.
+
+Akun penyedia harus melalui proses persetujuan sebelum dapat menggunakan fitur penyedia yang dilindungi, sesuai aturan aplikasi.
+
+Middleware pembatasan registrasi diterapkan pada endpoint ini.
+
+### POST `/api/auth/login`
+
+Memverifikasi kredensial dan menghasilkan token autentikasi apabila berhasil. Endpoint ini dilindungi middleware pembatasan percobaan autentikasi.
+
+Kredensial yang tidak valid menghasilkan respons generik agar tidak membocorkan apakah suatu email terdaftar.
+
+### GET `/api/auth/saya`
+
+Mengambil informasi akun yang sedang terautentikasi. Membutuhkan token autentikasi yang valid.
+
+### POST `/api/auth/logout`
+
+Mengakhiri sesi pengguna yang sedang login. Membutuhkan token autentikasi yang valid.
+
+Token lama harus ditolak setelah logout sesuai mekanisme versi token yang diterapkan server.
 
 ## Endpoint Penawaran
 
-### GET /api/penawaran
+### GET `/api/penawaran`
 
-Digunakan untuk mengambil daftar penawaran.
+Mengambil daftar penawaran yang boleh dilihat publik.
 
 Query yang didukung:
 
-\- q
+- `q`: pencarian berdasarkan nama.
+- `kategori`: filter kategori.
+- `status`: filter status sesuai kebijakan endpoint.
+- `tersedia`: filter ketersediaan stok.
+- `page`: nomor halaman.
+- `limit`: jumlah data per halaman.
 
-\- kategori
+Penawaran yang tidak dipublikasikan tidak boleh ditampilkan sebagai penawaran publik.
 
-\- status
+### GET `/api/penawaran/milik-saya`
 
-\- tersedia
+Mengambil daftar penawaran milik penyedia yang sedang login.
 
-\- page
+Membutuhkan autentikasi dan peran penyedia. Hasil dan metadata pagination, termasuk jumlah data, harus dibatasi pada penawaran milik penyedia tersebut.
 
-\- limit
+### GET `/api/penawaran/:id`
 
-Response berhasil menggunakan status HTTP 200.
+Mengambil detail penawaran yang boleh diakses berdasarkan kebijakan publik atau otorisasi endpoint.
 
-### GET /api/penawaran/:id
+- `400`: ID tidak valid.
+- `404`: penawaran tidak ditemukan atau tidak boleh diakses melalui endpoint tersebut.
 
-Digunakan untuk mengambil satu penawaran berdasarkan ID.
+### POST `/api/penawaran`
 
-Jika ID tidak ditemukan, API mengembalikan HTTP 404. ID yang tidak valid ditolak dengan HTTP 400.
+Membuat penawaran baru.
 
-### POST /api/penawaran
+Membutuhkan autentikasi dan peran penyedia yang telah disetujui. Identitas penyedia diambil dari akun terautentikasi di server, bukan dari `penyediaId` yang dikirim klien.
 
-Digunakan untuk membuat penawaran baru.
+Jika berhasil, API mengembalikan `201`.
 
-Request menggunakan JSON dan membutuhkan field penawaran sesuai validasi API.
+### PUT `/api/penawaran/:id`
 
-Jika data valid, API mengembalikan HTTP 201 dan Location menuju resource yang dibuat. Jika data tidak valid, API mengembalikan HTTP 400.
+Mengubah penawaran milik penyedia yang sedang login.
 
-#### Field Request
+Membutuhkan autentikasi, peran penyedia yang sesuai, validasi input, dan pemeriksaan kepemilikan di server. Klien tidak dapat mengubah pemilik penawaran dengan mengirim ID penyedia lain.
 
-Field yang digunakan pada request mengikuti validasi penawaran yang diterapkan pada API.
+### DELETE `/api/penawaran/:id`
 
-### PUT /api/penawaran/:id
+Menghapus penawaran sesuai aturan bisnis dan pemeriksaan kepemilikan.
 
-Digunakan untuk mengubah data penawaran berdasarkan ID.
-
-PUT menggunakan data penawaran lengkap sesuai validasi API. ID dan penyedia dari resource tidak diubah melalui request.
-
-Jika berhasil, API mengembalikan HTTP 200.
-
-#### Field Request
-
-PUT menggunakan data penawaran lengkap sesuai validasi API.
-
-### DELETE /api/penawaran/:id
-
-Digunakan untuk menghapus penawaran.
-
-Jika berhasil, API mengembalikan HTTP 204 tanpa body. Penawaran yang sudah memiliki riwayat pesanan ditolak dengan HTTP 409.
+- `204`: penghapusan berhasil.
+- `404`: penawaran tidak ditemukan atau bukan milik pengguna yang mengakses.
+- `409`: konflik bisnis jika penawaran memiliki riwayat pesanan, sesuai implementasi.
 
 ## Endpoint Pesanan
 
-### GET /api/pesanan
+Semua endpoint pesanan membutuhkan autentikasi. Peran yang diizinkan adalah pembeli dan penyedia yang telah terverifikasi.
 
-Digunakan untuk mengambil daftar pesanan.
+### GET `/api/pesanan`
 
-Response berhasil menggunakan HTTP 200.
+Mengambil daftar pesanan sesuai cakupan akses pengguna yang login.
 
-### GET /api/pesanan/:id
+- Pembeli hanya dapat melihat pesanan miliknya.
+- Penyedia hanya dapat melihat pesanan yang terkait dengan penawarannya sesuai aturan otorisasi server.
 
-Digunakan untuk mengambil satu pesanan berdasarkan ID.
+### GET `/api/pesanan/:id`
 
-Response berhasil menggunakan HTTP 200 jika pesanan ditemukan. Status ketika pesanan tidak ditemukan harus disesuaikan dengan implementasi API.
+Mengambil detail pesanan berdasarkan ID setelah server memeriksa hak akses pengguna.
 
-### POST /api/pesanan
+- `200`: pesanan ditemukan dan boleh diakses.
+- `404`: pesanan tidak ditemukan atau tidak boleh diakses oleh pengguna tersebut.
 
-Digunakan untuk membuat pesanan baru.
+### POST `/api/pesanan`
 
-Request menggunakan JSON dengan `emailPembeli` dan daftar `items`. Setiap item memiliki `penawaranId` dan `kuantitas`.
+Membuat pesanan baru. Endpoint ini hanya boleh diakses oleh pembeli yang telah login.
 
-Satu pesanan hanya boleh menggunakan penawaran dari satu penyedia.
+Request menggunakan JSON berisi daftar `items`. Setiap item memiliki `penawaranId` dan `kuantitas` sesuai validasi server.
 
-Jika berhasil, API mengembalikan HTTP 201.
+Identitas pembeli ditentukan berdasarkan akun yang terautentikasi, bukan berdasarkan `emailPembeli` dari klien. Klien juga tidak dapat menentukan pemilik penawaran melalui `penyediaId`.
 
-## Query yang Didukung
+Semua penawaran dalam satu pesanan harus berasal dari satu penyedia. Stok divalidasi dan perubahan database dilakukan melalui transaksi.
 
-Endpoint GET /api/penawaran mendukung query berikut:
+Jika berhasil, API mengembalikan `201`.
 
-\- `q` untuk pencarian berdasarkan nama.
+## Profil Penyedia
 
-\- `kategori` untuk filter kategori.
+Profil penyedia terkait dengan akun pengguna yang terdaftar. Data profil usaha dan status persetujuan dikelola sesuai aturan aplikasi.
 
-\- `status` untuk filter status.
+Akses fitur penyedia memerlukan autentikasi, peran yang sesuai, serta persetujuan jika diwajibkan. Field profil yang dapat dibuat atau diubah mengikuti validasi pada implementasi server.
 
-\- `tersedia` untuk filter ketersediaan stok.
+## Status HTTP dan Error
 
-\- `page` untuk menentukan halaman.
+| Status | Arti |
+|---|---|
+| `200` | Request berhasil. |
+| `201` | Resource berhasil dibuat. |
+| `204` | Request berhasil tanpa response body. |
+| `400` | Input atau parameter tidak valid. |
+| `401` | Token tidak ada, tidak valid, kedaluwarsa, atau sesi tidak lagi berlaku. |
+| `403` | Pengguna terautentikasi tetapi tidak memiliki peran atau izin yang diperlukan. |
+| `404` | Resource tidak ditemukan atau disembunyikan karena pembatasan akses. |
+| `409` | Konflik aturan bisnis. |
+| `413` | Ukuran request body melebihi batas. |
+| `415` | Content-Type tidak sesuai untuk request yang membutuhkan JSON. |
+| `429` | Batas jumlah request terlampaui. |
 
-\- `limit` untuk menentukan jumlah data per halaman.
+Struktur pesan error mengikuti format respons yang diterapkan server.
 
-Query dapat digunakan secara bersamaan.
+## Keamanan
 
-### Ketentuan Pagination
+- Kata sandi disimpan sebagai hash dengan salt dan work factor, bukan teks biasa.
+- Token diverifikasi server sebelum identitas pengguna dipercaya.
+- Server memeriksa status akun dan versi token sesuai implementasi autentikasi.
+- Otorisasi dilakukan di server berdasarkan peran dan kepemilikan data.
+- Registrasi pembeli dan penyedia menggunakan endpoint terpisah.
+- Endpoint autentikasi memiliki pembatasan jumlah request sesuai konfigurasi.
+- Jangan menuliskan token, kata sandi, hash kata sandi, atau nilai rahasia lingkungan dalam dokumentasi dan log.
 
-\- `page` dimulai dari 1, dengan rentang 1–10000.
+## Pengujian
 
-\- `limit` memiliki nilai default 10, dengan rentang 1–50.
+Pengujian autentikasi dijalankan menggunakan:
 
-\- `tersedia=true` digunakan untuk menampilkan penawaran yang berstatus aktif, memiliki stok lebih dari nol, dan belum melewati tanggal kedaluwarsa.
+`npm run auth:test`
 
-Contoh penggunaan:
-
-`GET /api/penawaran?q=roti&kategori=roti&tersedia=true&page=1&limit=2`
-
-## Status Error
-
-API menggunakan status HTTP untuk membedakan hasil request.
-
-400 digunakan untuk input atau parameter yang tidak valid.
-
-404 digunakan ketika resource tidak ditemukan.
-
-409 digunakan untuk konflik bisnis seperti stok tidak cukup, satu penyedia tidak terpenuhi, atau penawaran memiliki riwayat pesanan.
-
-415 digunakan ketika Content-Type bukan JSON untuk request yang membutuhkan JSON.
-
-413 digunakan ketika ukuran request body melebihi batas.
-
-## Aturan Pesanan
-
-Pesanan harus memiliki pembeli yang valid.
-
-Item dalam pesanan harus valid dan tidak boleh duplikat.
-
-Semua penawaran dalam satu pesanan harus berasal dari satu penyedia.
-
-Stok harus mencukupi sebelum pesanan dibuat.
-
-Pembuatan pesanan menggunakan transaksi database sehingga perubahan dibatalkan apabila terjadi kegagalan.
-
-Harga pada detail pesanan disimpan sebagai snapshot sehingga perubahan harga penawaran tidak mengubah harga pada pesanan yang sudah dibuat.
-
-## Pengujian API
-
-Pengujian dilakukan untuk memastikan endpoint dan aturan bisnis API berjalan sesuai harapan.
-
-Pengujian mencakup:
-
-\- Pemeriksaan status server dan koneksi database.
-
-\- Pengambilan, pembuatan, perubahan, dan penghapusan penawaran.
-
-\- Pengujian pencarian, filter, dan pagination.
-
-\- Pembuatan pesanan dengan input valid dan tidak valid.
-
-\- Pengujian validasi stok dan konflik penyedia.
-
-\- Pemeriksaan snapshot harga pada detail pesanan.
-
-\- Pengujian penolakan penghapusan penawaran yang memiliki riwayat pesanan.
-
-Hasil pengujian harus dicatat berdasarkan hasil aktual dari API.
+Catat hasil pengujian aktual pada `docs/hasil-uji-chapter8.md`. Dokumentasikan status HTTP, perilaku penolakan akses, dan bukti pemeriksaan kepemilikan tanpa mencantumkan rahasia.
