@@ -1,10 +1,5 @@
-
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420">
- <defs>
-  <radialGradient id="bg"><stop stop-color="#E7EBCF"/><stop offset="1" stop-color="#D8E2C7"/></radialGradient>
-  <filter id="sh"><feDropShadow dy="10" stdDeviation="11" flood-color="#677142" flood-opacity=".18"/></filter>
-  <linearGradient id="bag" x2="0" y2="1"><stop stop-color="#E8CF9E"/><stop offset="1" stop-color="#BE9C68"/></linearGradient>
- </defs>
+ <defs><radialGradient id="bg"><stop stop-color="#E7EBCF"/><stop offset="1" stop-color="#D8E2C7"/></radialGradient><filter id="sh"><feDropShadow dy="10" stdDeviation="11" flood-color="#677142" flood-opacity=".18"/></filter><linearGradient id="bag" x2="0" y2="1"><stop stop-color="#E8CF9E"/><stop offset="1" stop-color="#BE9C68"/></linearGradient></defs>
  <rect width="640" height="420" fill="url(#bg)"/>
  <path d="M46 420 28 330l580-114 32 204" fill="#F2EFE2"/>
  <g filter="url(#sh)"><path d="m189 186 252-2-19 171H208Z" fill="url(#bag)"/>

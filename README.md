@@ -1,6 +1,6 @@
 # SisaBaik
 
-SisaBaik merupakan aplikasi untuk membantu pengelolaan penawaran makanan dan pemesanan makanan. Proyek ini terdiri dari backend API menggunakan Node.js dan Express, serta frontend menggunakan Vue 3 dan Vite.
+SisaBaik merupakan aplikasi untuk membantu pengelolaan penawaran makanan dan pemesanan makanan. Proyek ini terdiri dari backend API menggunakan Node.js dan Express, serta frontend menggunakan Vue 3 dan Vite. Aplikasi menggunakan PostgreSQL sebagai sistem pengelolaan basis data.
 
 ## 1. Persyaratan
 
@@ -23,7 +23,9 @@ sisabaik-api/
 │   │   ├── assets/
 │   │   ├── components/
 │   │   ├── data/
-│   │   └── lib/
+│   │   ├── lib/
+│   │   ├── router/
+│   │   └── views/
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.js
@@ -43,16 +45,22 @@ sisabaik-api/
    ```
 
 2. Siapkan database PostgreSQL.
-3. Sesuaikan konfigurasi pada `.env.example`.
+3. Sesuaikan konfigurasi berdasarkan `.env.example`.
 4. Buat file `.env` berdasarkan `.env.example`, kemudian isi konfigurasi database dan rahasia autentikasi untuk lingkungan lokal.
 5. Jalankan migrasi database sesuai urutan proyek, termasuk `database/07_auth.sql`.
 
 ## 4. Menjalankan Backend
 
-Jalankan server pengembangan dari direktori utama:
+Jalankan server pengembangan dari direktori utama proyek:
 
 ```bash
 npm run dev
+```
+
+Backend dapat diakses melalui:
+
+```text
+http://127.0.0.1:3000
 ```
 
 Untuk menjalankan pengujian autentikasi:
@@ -121,22 +129,40 @@ Jika source frontend mengalami perubahan setelah build, jalankan kembali `npm ru
 
 ## 6. Implementasi Frontend Chapter 9
 
-Frontend dikembangkan menggunakan Vue 3 dan Vite dengan pendekatan component-based.
+Pada Chapter 9, frontend mulai dikembangkan menggunakan Vue 3 dan Vite dengan pendekatan component-based.
 
 Beberapa komponen yang digunakan meliputi:
 
 - `Ikon.vue`: menampilkan ikon aplikasi.
 - `KartuPenawaran.vue`: menampilkan informasi penawaran makanan.
-- `FilterPenawaran.vue`: mengelola kontrol pencarian dan filter katalog.
+- `FilterPenawaran.vue`: mengelola pencarian dan filter katalog.
 - `FormPenawaran.vue`: menyediakan form untuk menambahkan penawaran.
 
 Aset visual menggunakan file SVG yang disimpan di dalam direktori `src/assets/`, termasuk logo dan ilustrasi kategori makanan.
 
-Data penawaran pada Chapter 9 masih menggunakan fixture lokal yang disimpan dalam memori aplikasi. Browser belum melakukan komunikasi dengan backend API maupun PostgreSQL pada tahap ini.
+Pada tahap awal, data penawaran masih menggunakan fixture lokal yang disimpan dalam memori aplikasi. Pengembangan tersebut menjadi dasar untuk proses integrasi dengan backend pada Chapter 10.
 
-Oleh karena itu, data penawaran yang ditambahkan melalui form akan hilang setelah halaman di-refresh. Integrasi frontend dengan backend dilakukan pada tahap pengembangan berikutnya.
+## 7. Integrasi Frontend dan Backend Chapter 10
 
-## 7. Autentikasi dan Otorisasi
+Pada Chapter 10, frontend Vue dikembangkan lebih lanjut agar dapat berkomunikasi dengan backend API SisaBaik.
+
+Implementasi mencakup beberapa bagian berikut:
+
+- Integrasi komunikasi HTTP antara frontend dan backend.
+- Pengelolaan sesi pengguna dan token autentikasi.
+- Implementasi halaman login dan registrasi.
+- Penggunaan Vue Router untuk navigasi halaman.
+- Pembatasan akses halaman berdasarkan autentikasi dan peran pengguna.
+- Pengambilan dan pengelolaan data penawaran melalui backend.
+- Pengelolaan pesanan pembeli dan penyedia.
+- Pengelolaan status pesanan dan proses pengambilan.
+- Penanganan respons API, pesan kesalahan, dan kondisi loading.
+
+Frontend menggunakan alamat backend `http://127.0.0.1:3000` melalui konfigurasi proxy Vite selama pengembangan.
+
+Dengan integrasi ini, proses utama aplikasi tidak lagi hanya bergantung pada fixture lokal, tetapi menggunakan data yang dikelola oleh backend dan PostgreSQL.
+
+## 8. Autentikasi dan Otorisasi
 
 Backend menggunakan autentikasi berbasis token serta pemeriksaan peran dan kepemilikan data di server.
 
@@ -151,13 +177,19 @@ Ketentuan autentikasi dan otorisasi meliputi:
 - Penyedia hanya dapat mengelola penawaran miliknya sendiri.
 - Logout semua sesi membatalkan validitas token lama melalui mekanisme versi token yang diperiksa oleh server.
 
-## 8. Konfigurasi Lingkungan
+## 9. Konfigurasi Lingkungan
 
-Gunakan `.env.example` sebagai acuan nama variabel konfigurasi. Simpan nilai rahasia hanya di dalam file `.env` lokal.
+Gunakan `.env.example` sebagai acuan nama variabel konfigurasi.
+
+Simpan nilai rahasia hanya di dalam file `.env` lokal.
 
 Jangan memasukkan kata sandi, token, nilai rahasia JWT, atau isi file `.env` ke dokumentasi maupun repositori Git.
 
-## 9. Pengujian
+## 10. Pengujian
+
+Pengujian backend dan frontend dilakukan untuk memastikan fitur aplikasi berjalan sesuai fungsinya.
+
+### Pengujian Backend
 
 Pengujian autentikasi backend dapat dijalankan dengan:
 
@@ -167,23 +199,35 @@ npm run auth:test
 
 Pengujian tersebut memverifikasi perilaku autentikasi dan otorisasi sesuai cakupan skrip pengujian proyek.
 
+### Pengujian Frontend
+
 Pengujian frontend dilakukan melalui browser dengan memeriksa:
 
 - Tampilan katalog pembeli dan penyedia.
 - Pencarian dan filter kategori.
 - Validasi form penawaran.
-- Perubahan state dan aliran data antarkomponen.
+- Login dan registrasi pengguna.
+- Navigasi halaman berdasarkan peran pengguna.
+- Proses pembuatan dan pengelolaan penawaran.
+- Proses pemesanan, pembatalan, dan perubahan status pesanan.
+- Pengelolaan stok dan pencatatan pembayaran.
+- Pembaruan informasi pada dashboard.
 - Responsivitas pada ukuran layar 375 px, 768 px, dan 1280 px.
 - Hasil production build dan preview.
 
-Catat hasil pengujian berdasarkan kondisi aktual aplikasi.
+Pengujian dilakukan menggunakan skenario yang telah ditentukan dan hasilnya dicatat berdasarkan kondisi aktual aplikasi.
 
-## 10. Dokumentasi API dan Hasil Pengujian
+## 11. Dokumentasi API dan Hasil Pengujian
 
 Dokumentasi proyek tersedia pada direktori `docs/`:
 
 - `docs/API.md`: dokumentasi endpoint, format request, respons, dan kode kesalahan.
 - `docs/hasil-uji-chapter8.md`: catatan hasil pengujian autentikasi dan otorisasi Chapter 8.
 - `docs/hasil-uji-chapter9.md`: catatan hasil pengujian komponen dan frontend Chapter 9.
+- `docs/hasil-uji-chapter10.md`: catatan hasil pengujian integrasi frontend dan backend Chapter 10.
 
-Dokumentasi hasil pengujian harus berisi hasil yang benar-benar diperoleh selama pengujian. Jangan mencantumkan token atau kredensial rahasia.
+Dokumentasi hasil pengujian disusun berdasarkan hasil yang benar-benar diperoleh selama pengujian. Jangan mencantumkan token atau kredensial rahasia.
+
+---
+
+**Proyek SisaBaik** by: Imam Abdul Rahim

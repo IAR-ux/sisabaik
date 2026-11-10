@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import * as c from "../controllers/pesanan.js";
 import {
@@ -18,4 +17,5 @@ router.use((req, res, next) => {
 router.get("/", c.daftar);
 router.get("/:id", c.detail);
 router.post("/", wajibPeran("pembeli"), c.buat);
+router.post("/:id/aksi", c.aksi);
 export default router;

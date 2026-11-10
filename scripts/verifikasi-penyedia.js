@@ -1,4 +1,3 @@
-
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,7 +21,7 @@ export async function verifikasiPenyedia(
     mulai = true;
     await c.query("SET LOCAL lock_timeout='2s'");
     const r = await c.query(
-      "SELECT   py.id,u.email   FROM   penyedia   py  JOIN   pengguna   u   ON\nu.id=py.pengguna_id WHERE u.email=$1 AND u.peran='penyedia' AND u.aktif=TRUE\nFOR UPDATE OF py,u",
+      "SELECT py.id,u.email FROM penyedia py JOIN pengguna u ON u.id=py.pengguna_id WHERE u.email=$1 AND u.peran='penyedia' AND u.aktif=TRUE FOR UPDATE OF py,u",
       [email.trim().toLowerCase()],
     );
     if (r.rows.length !== 1)
@@ -46,7 +45,6 @@ export async function verifikasiPenyedia(
     c.release(rusak);
   }
 }
-
 if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
@@ -81,7 +79,7 @@ if (
       );
     ({ pool } = await import("../src/db/pool.js"));
     const db = await pool.query(
-      "SELECT current_database() AS nama,(SELECT ssl FROM pg_stat_ssl WHERE\npid=pg_backend_pid()) AS tls",
+      "SELECT current_database() AS nama,(SELECT ssl FROM pg_stat_ssl WHERE pid=pg_backend_pid()) AS tls",
     );
     if (db.rows[0].nama !== tujuan || (cloud && !db.rows[0].tls))
       throw new Error("Database tujuan atau TLS tidak sesuai.");
