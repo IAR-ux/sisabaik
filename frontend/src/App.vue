@@ -182,7 +182,12 @@ async function logout() {
     </div>
     <div class="container footer-bottom">
       <p>© 2026 SisaBaik</p>
-      <p>Kesempatan kedua untuk makanan yang masih bernilai.</p>
-    </div>
+      <p class="footer-tagline">
+        Kesempatan kedua untuk makanan yang masih bernilai.
+      </p>
+      <p class="footer-credit">
+        Developed by <strong>Imam Abdul Rahim / IAR-ux</strong>
+      </p>
+</div>
   </footer>
 </template>

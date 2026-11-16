@@ -1110,9 +1110,19 @@ legend {
   font-size: 9px;
   color: #5b6a60;
 }
-.footer-bottom p:last-child {
+.footer-bottom .footer-tagline {
   max-width: 430px;
   text-align: right;
+}
+.footer-credit {
+  font-size: 9px;
+  color: #7b887e;
+  text-align: right;
+  white-space: nowrap;
+}
+.footer-credit strong {
+  color: #405b48;
+  font-weight: 600;
 }
 .workspace {
   min-height: 64vh;
@@ -1923,8 +1933,12 @@ hr {
     gap: 12px;
     font-size: 9px;
   }
-  .footer-bottom p:last-child {
-    text-align: left;
+  .footer-bottom .footer-tagline {
+  text-align: left;
+  }
+.footer-credit {
+  text-align: left;
+  white-space: normal;
   }
   .login-layout {
     grid-template-columns: 1fr;
