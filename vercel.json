@@ -5,7 +5,8 @@
     "app": {
       "root": ".",
       "framework": "express",
-      "entrypoint": "src/app.js"
+      "entrypoint": "src/app.js",
+      "buildCommand": "echo 'Backend tidak memerlukan build'"
     },
     "frontend": {
       "root": "frontend",
